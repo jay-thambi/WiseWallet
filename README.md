@@ -4,11 +4,31 @@ A modern, student-focused budgeting application that helps students manage their
 
 ## Features
 
-- 📊 Expense Tracking with Categories
-- 🎓 Student Discount Integration
-- 💰 Bill & Subscription Management
-- 📈 AI-Powered Budget Insights
-- 🎨 Clean, Intuitive UI/UX
+- Budget and Goal Tracking with Categories
+- Student Discount Integration
+- AI-Powered Budget Insights
+- Clean, Intuitive UI/UX
+
+## Key Features Explained
+
+### AI Budget Insights
+The app includes a smart AI analysis tab that provides:
+- Real-time spending analysis across all budget categories
+- Alerts for budgets nearing their limits (>80% used)
+- Personalized savings recommendations
+- Category-specific money-saving tips
+- Identification of potential savings in underutilized budgets
+
+### Budget Management
+- Create and track multiple Budget categories
+- Create and track multiple Goal categories
+- Visual progress tracking with interactive circle display
+- Transaction history for each budget
+- One-click budget reset functionality
+- Real-time spending updates
+
+### Student Discount 
+- Student discount page which can filter discount offers by sections or list in one place
 
 ## Tech Stack
 
@@ -101,7 +121,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Team
 
 - Abilash
-- Sanjay
+- Sanjay Thambithurai (40184405)
 - Ashkan
 - Youssef
 - Sarah
