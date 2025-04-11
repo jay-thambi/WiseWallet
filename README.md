@@ -9,6 +9,10 @@ A modern, student-focused budgeting application that helps students manage their
 - AI-Powered Budget Insights
 - Clean, Intuitive UI/UX
 
+## Demo Video
+
+![WiseWallet Demo](demo.mov)
+
 ## Key Features Explained
 
 ### AI Budget Insights
