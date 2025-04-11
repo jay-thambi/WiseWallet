@@ -109,11 +109,11 @@ WiseWallet/
 │   └── server.js
 └── README.md
 ```
-Presented by :
-Team: Dream Team
 
-#Ashkan Forghani (40176561)
-#Sarah Ohayon (40209765)
-#Sanjay Thambithurai (40184405)
-#Abilash Sasitharan (40242660)
-#Youssef Yacoub (40189020)
+## Team Members
+
+- [Ashkan Forghani](https://github.com/ashkan-forghani) (40176561)
+- [Sarah Ohayon](https://github.com/sarah-ohayon) (40209765)
+- [Sanjay Thambithurai](https://github.com/jay-thambi) (40184405)
+- [Abilash Sasitharan](https://github.com/abilash-sasitharan) (40242660)
+- [Youssef Yacoub](https://github.com/youssef-yacoub) (40189020)
