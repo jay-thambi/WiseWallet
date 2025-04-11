@@ -31,11 +31,11 @@ const BudgetCard = ({
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.header}
-        onPress={() => setIsSpendingModalVisible(true)}
-      >
-        <View style={styles.titleSection}>
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.titleSection}
+          onPress={() => setIsSpendingModalVisible(true)}
+        >
           <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
             <MaterialCommunityIcons name={icon} size={24} color={color} />
           </View>
@@ -48,9 +48,11 @@ const BudgetCard = ({
               </Text>
             )}
           </View>
+        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          <MaterialCommunityIcons name="chevron-right" size={24} color="#666" />
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={24} color="#666" />
-      </TouchableOpacity>
+      </View>
 
       <View style={styles.progressContainer}>
         <View
@@ -107,6 +109,12 @@ const styles = StyleSheet.create({
   titleSection: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   iconContainer: {
     width: 40,
@@ -154,7 +162,7 @@ const styles = StyleSheet.create({
   totalAmount: {
     fontSize: 14,
     color: '#666',
-  },
+  }
 });
 
 export default BudgetCard; 

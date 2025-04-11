@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import Header from '../components/common/Header';
 import BudgetCircle from '../components/budget/BudgetCircle';
 import BudgetCard from '../components/budget/BudgetCard';
 import AddBudgetModal from '../components/budget/AddBudgetModal';
+import { useGlobalState } from '../context/GlobalStateContext';
 
 const BUDGET_CATEGORIES = [
   {
@@ -22,7 +23,7 @@ const BUDGET_CATEGORIES = [
     name: 'Transport',
     icon: 'train-car',
     color: '#9B51E0',
-    monthlySpending: 120,
+    monthlySpending: 50,
     monthlyBudget: 200
   },
   {
@@ -40,6 +41,14 @@ const BUDGET_CATEGORIES = [
     color: '#2F80ED',
     monthlySpending: 20,
     monthlyBudget: 200
+  },
+  {
+    id: 5,
+    name: 'Beauty',
+    icon: 'lipstick',
+    color: '#FF6B6B',
+    monthlySpending: 20,
+    monthlyBudget: 50
   }
 ];
 
@@ -70,69 +79,75 @@ const RECENT_TRANSACTIONS = [
 const BudgetScreen = () => {
   const router = useRouter();
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
-  const [budgets, setBudgets] = useState(BUDGET_CATEGORIES);
-  const [transactions, setTransactions] = useState([]);
   const [isSpendingModalVisible, setIsSpendingModalVisible] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState(null);
 
-  const totalBudget = budgets.reduce(
-    (sum, category) => sum + category.monthlyBudget,
-    0
-  );
+  const { budgets, setBudgets, transactions, setTransactions } = useGlobalState();
 
-  const budgetSegments = budgets.map(category => ({
-    amount: category.monthlyBudget,
-    color: category.color
-  }));
+  // Initialize budgets with sample data
+  useEffect(() => {
+    if (budgets.length === 0) {
+      setBudgets(BUDGET_CATEGORIES);
+      // Clear any existing transactions when reinitializing budgets
+      setTransactions([]);
+    }
+  }, []);
 
   const handleResetBudgets = () => {
     setBudgets([]);
     setTransactions([]);
+    setSelectedBudget(null);
   };
 
   const handleAddBudget = (newBudget) => {
     const budget = {
-      id: budgets.length + 1,
+      id: Date.now(),
       name: newBudget.category.name,
       icon: newBudget.category.icon,
       color: newBudget.category.color,
       monthlySpending: 0,
-      monthlyBudget: newBudget.amount,
+      monthlyBudget: parseFloat(newBudget.amount),
       startDate: newBudget.startDate,
       endDate: newBudget.endDate
     };
 
-    // Add the new budget to the list
-    const updatedBudgets = [...budgets, budget];
-    setBudgets(updatedBudgets);
-
-    // Close the modal
+    setBudgets(prev => {
+      const newBudgets = [...prev, budget];
+      return newBudgets;
+    });
+    setSelectedBudget(budget);
     setIsAddModalVisible(false);
   };
 
   const handleAddSpending = (budgetId, amount, description) => {
-    // Update budget spending
-    setBudgets(currentBudgets =>
-      currentBudgets.map(budget => {
+    const numericAmount = parseFloat(amount);
+    setBudgets(currentBudgets => {
+      const updatedBudgets = currentBudgets.map(budget => {
         if (budget.id === budgetId) {
-          return {
+          const updatedBudget = {
             ...budget,
-            monthlySpending: budget.monthlySpending + amount
+            monthlySpending: (budget.monthlySpending || 0) + numericAmount
           };
+          if (selectedBudget?.id === budgetId) {
+            setSelectedBudget(updatedBudget);
+          }
+          return updatedBudget;
         }
         return budget;
-      })
-    );
+      });
+      return updatedBudgets;
+    });
 
-    // Add new transaction
     const budget = budgets.find(b => b.id === budgetId);
+    if (!budget) return;
+
     const today = new Date();
     const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
     const newTransaction = {
       name: description,
       date: formattedDate,
-      amount: amount,
+      amount: numericAmount,
       icon: budget.icon,
       color: budget.color
     };
@@ -152,13 +167,13 @@ const BudgetScreen = () => {
       <Header />
 
       <ScrollView>
-        <View style={styles.statusContainer}>
-          <Text style={styles.statusText}>You are on the right track.</Text>
-        </View>
-
         <BudgetCircle
-          totalBudget={totalBudget}
-          segments={budgetSegments}
+          totalBudget={selectedBudget?.monthlyBudget || 0}
+          segments={selectedBudget ? [{
+            amount: selectedBudget.monthlyBudget,
+            color: selectedBudget.color
+          }] : []}
+          totalSpent={selectedBudget?.monthlySpending || 0}
         />
 
         <View style={styles.categoryHeader}>
@@ -187,7 +202,14 @@ const BudgetScreen = () => {
           <>
             <View style={styles.categoriesGrid}>
               {budgets.map(category => (
-                <View key={category.id} style={styles.categoryItem}>
+                <TouchableOpacity
+                  key={category.id}
+                  style={[
+                    styles.categoryItem,
+                    selectedBudget?.id === category.id && styles.selectedCategory
+                  ]}
+                  onPress={() => setSelectedBudget(category)}
+                >
                   <View
                     style={[
                       styles.categoryIcon,
@@ -200,11 +222,9 @@ const BudgetScreen = () => {
                       color={category.color}
                     />
                   </View>
-                  <Text style={styles.categoryText}>{category.name}</Text>
-                  <Text style={styles.categoryAmount}>
-                    ${category.monthlySpending}
-                  </Text>
-                </View>
+                  <Text style={styles.categoryName}>{category.name}</Text>
+                  <Text style={styles.categoryAmount}>${category.monthlySpending || 0}</Text>
+                </TouchableOpacity>
               ))}
             </View>
 
@@ -287,6 +307,10 @@ const styles = StyleSheet.create({
     padding: 8,
     alignItems: 'center',
   },
+  selectedCategory: {
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+  },
   categoryIcon: {
     width: 48,
     height: 48,
@@ -295,7 +319,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
   },
-  categoryText: {
+  categoryName: {
     fontSize: 12,
     textAlign: 'center',
     marginBottom: 2,

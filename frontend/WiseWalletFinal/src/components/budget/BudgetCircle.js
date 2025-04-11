@@ -1,89 +1,93 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
-import Svg, { Circle, Path, G } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const BudgetCircle = ({ totalBudget, segments }) => {
+const BudgetCircle = ({ totalBudget, segments, totalSpent }) => {
   const radius = 80;
   const strokeWidth = 20;
   const center = radius + strokeWidth;
-  const circumference = 2 * Math.PI * radius;
-  
-  let startAngle = 0;
-  const total = segments.reduce((sum, segment) => sum + segment.amount, 0);
+
+  // Get the color from the first segment
+  const segment = segments && segments[0];
+  const categoryColor = segment ? segment.color : '#E5E5E5';
+
+  // Check if overspent
+  const isOverspent = totalSpent > totalBudget && totalBudget > 0;
+
+  // Calculate the spent percentage for the progress arc
+  // Cap at 100% for visual display but still show actual amount
+  const spentPercentage = Math.min(totalBudget > 0 ? (totalSpent / totalBudget) : 0, 1);
+  const spentAngle = isOverspent ? 360 : (spentPercentage * 360);
+
+  // SVG arc calculation
+  const startAngle = -90; // Start from top
+  const endAngle = startAngle + spentAngle;
+  const largeArcFlag = spentAngle > 180 ? 1 : 0;
+
+  // Calculate start and end points
+  const startX = center + radius * Math.cos(startAngle * Math.PI / 180);
+  const startY = center + radius * Math.sin(startAngle * Math.PI / 180);
+  const endX = center + radius * Math.cos(endAngle * Math.PI / 180);
+  const endY = center + radius * Math.sin(endAngle * Math.PI / 180);
+
+  // Create the arc path
+  const arcPath = `
+    M ${center} ${center}
+    L ${startX} ${startY}
+    A ${radius} ${radius} 0 ${largeArcFlag} 1 ${endX} ${endY}
+    L ${center} ${center}
+  `;
 
   return (
     <View style={styles.container}>
-      <Svg
-        width={center * 2}
-        height={center * 2}
-        viewBox={`0 0 ${center * 2} ${center * 2}`}
-      >
-        {/* Background circle */}
-        <Circle
-          cx={center}
-          cy={center}
-          r={radius}
-          stroke="#E5E5E5"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        
-        {/* Budget segments */}
-        {segments.map((segment, index) => {
-          const percentage = segment.amount / total;
-          const angle = percentage * 360;
-          const sweepFlag = angle <= 180 ? 0 : 1;
-          
-          // Calculate start and end points
-          const x1 = center + radius * Math.cos((startAngle - 90) * Math.PI / 180);
-          const y1 = center + radius * Math.sin((startAngle - 90) * Math.PI / 180);
-          const x2 = center + radius * Math.cos((startAngle + angle - 90) * Math.PI / 180);
-          const y2 = center + radius * Math.sin((startAngle + angle - 90) * Math.PI / 180);
-
-          const pathData = `
-            M ${center} ${center}
-            L ${x1} ${y1}
-            A ${radius} ${radius} 0 ${sweepFlag} 1 ${x2} ${y2}
-            L ${center} ${center}
-          `;
-
-          startAngle += angle;
-
-          return (
-            <Path
-              key={index}
-              d={pathData}
-              fill={segment.color}
-              stroke="white"
-              strokeWidth={1}
+      <View style={styles.chartContainer}>
+        <View style={styles.chartWrapper}>
+          <Svg
+            width={center * 2}
+            height={center * 2}
+            viewBox={`0 0 ${center * 2} ${center * 2}`}
+          >
+            {/* Background circle */}
+            <Circle
+              cx={center}
+              cy={center}
+              r={radius}
+              stroke="#E5E5E5"
+              strokeWidth={strokeWidth}
+              fill="none"
             />
-          );
-        })}
-        
-        {/* Center text */}
-        <G>
-          <Text
-            x={center}
-            y={center - 10}
-            textAnchor="middle"
-            fill="#000"
-            fontSize="14"
-          >
-            Budget
-          </Text>
-          <Text
-            x={center}
-            y={center + 10}
-            textAnchor="middle"
-            fill="#000"
-            fontSize="16"
-            fontWeight="bold"
-          >
-            ${totalBudget}
-          </Text>
-        </G>
-      </Svg>
+
+            {/* Spent amount segment */}
+            {totalSpent > 0 && totalBudget > 0 && (
+              <Path
+                d={arcPath}
+                fill={isOverspent ? '#FF6B6B' : categoryColor}
+                fillOpacity={1}
+                stroke="white"
+                strokeWidth={1}
+              />
+            )}
+          </Svg>
+        </View>
+
+        <View style={styles.budgetInfo}>
+          <Text style={styles.spentLabel}>Spent</Text>
+          <Text style={[
+            styles.spentAmount,
+            isOverspent && styles.overspentAmount
+          ]}>${totalSpent || 0}</Text>
+          <Text style={styles.totalAmount}>of ${totalBudget || 0}</Text>
+        </View>
+      </View>
+
+      {isOverspent && (
+        <View style={styles.overspentContainer}>
+          <MaterialCommunityIcons name="alert-circle" size={20} color="#FF6B6B" />
+          <Text style={styles.overspentText}>Budget exceeded!</Text>
+        </View>
+      )}
     </View>
   );
 };
@@ -93,6 +97,51 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,
+  },
+  chartContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 20,
+  },
+  chartWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  budgetInfo: {
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  spentLabel: {
+    fontSize: 14,
+    color: '#666',
+  },
+  spentAmount: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+    marginVertical: 4,
+  },
+  overspentAmount: {
+    color: '#FF6B6B',
+  },
+  totalAmount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  overspentContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    backgroundColor: '#FFE5E5',
+    padding: 8,
+    borderRadius: 8,
+    gap: 8,
+  },
+  overspentText: {
+    color: '#FF6B6B',
+    fontWeight: '500',
   },
 });
 
