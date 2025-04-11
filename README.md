@@ -86,19 +86,11 @@ WiseWallet/
 └── README.md
 ```
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
 Presented by :
 Team: Dream Team
 
-Ashkan Forghani (40176561)
-Sarah Ohayon (40209765)
-Sanjay Thambithurai (40184405)
-Abilash Sasitharan (40242660)
-Youssef Yacoub (40189020)
+#Ashkan Forghani (40176561)
+#Sarah Ohayon (40209765)
+#Sanjay Thambithurai (40184405)
+#Abilash Sasitharan (40242660)
+#Youssef Yacoub (40189020)
