@@ -11,7 +11,7 @@ A modern, student-focused budgeting application that helps students manage their
 
 ## Demo Video
 
-![WiseWallet Demo](demo.mov)
+[![WiseWallet Demo](demo.mov)](https://github.com/user-attachments/assets/1b4339da-01bf-43c1-bd25-a8944ef1d230)
 
 ## Key Features Explained
 
