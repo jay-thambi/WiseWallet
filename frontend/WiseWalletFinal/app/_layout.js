@@ -3,7 +3,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider as PaperProvider, DefaultTheme } from 'react-native-paper';
 import { AuthProvider } from '../src/context/AuthContext';
 import { useEffect } from 'react';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import GoalsScreen from '../src/screens/GoalsScreen';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -32,9 +33,28 @@ export default function Layout() {
               tabBarActiveTintColor: theme.colors.primary,
               tabBarInactiveTintColor: '#666',
               tabBarStyle: {
-                height: 60,
-                paddingBottom: 8,
+                height: 80,
+                paddingBottom: 20,
                 paddingTop: 8,
+                backgroundColor: '#fff',
+                borderTopWidth: 1,
+                borderTopColor: '#e0e0e0',
+                elevation: 8,
+                shadowColor: '#000',
+                shadowOffset: {
+                  width: 0,
+                  height: -2,
+                },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+              },
+              tabBarLabelStyle: {
+                fontSize: 12,
+                fontWeight: '500',
               },
             }}
           >

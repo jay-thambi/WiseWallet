@@ -21,7 +21,6 @@ const TransactionList = ({ transactions }) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Transactions</Text>
-        <Text style={styles.addNew}>Add new</Text>
       </View>
       {transactions.map((transaction, index) => (
         <TransactionItem key={index} {...transaction} />
@@ -46,10 +45,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '500',
-  },
-  addNew: {
-    color: '#6200ee',
     fontWeight: '500',
   },
   transactionItem: {

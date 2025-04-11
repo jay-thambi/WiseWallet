@@ -1,112 +1,159 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import { Text, Surface, IconButton } from 'react-native-paper';
+import React, { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AddSpendingModal from './AddSpendingModal';
 
-const BudgetCard = ({ 
-  name, 
-  icon, 
-  color, 
-  monthlySpending, 
+const BudgetCard = ({
+  id,
+  name,
+  icon,
+  color,
+  monthlySpending,
   monthlyBudget,
-  onPress 
+  startDate,
+  endDate,
+  onAddSpending
 }) => {
-  const progress = monthlySpending / monthlyBudget;
-  
+  const [isSpendingModalVisible, setIsSpendingModalVisible] = useState(false);
+  const progress = (monthlySpending / monthlyBudget) * 100;
+  const remaining = monthlyBudget - monthlySpending;
+
+  // Format dates
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
   return (
-    <Surface style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.iconContainer}>
-          <MaterialCommunityIcons 
-            name={icon} 
-            size={24} 
-            color={color} 
+    <View style={styles.container}>
+      <TouchableOpacity
+        style={styles.header}
+        onPress={() => setIsSpendingModalVisible(true)}
+      >
+        <View style={styles.titleSection}>
+          <View style={[styles.iconContainer, { backgroundColor: color + '20' }]}>
+            <MaterialCommunityIcons name={icon} size={24} color={color} />
+          </View>
+          <View>
+            <Text style={styles.title}>{name}</Text>
+            <Text style={styles.subtitle}>${remaining} remaining</Text>
+            {startDate && endDate && (
+              <Text style={styles.dateRange}>
+                {formatDate(startDate)} - {formatDate(endDate)}
+              </Text>
+            )}
+          </View>
+        </View>
+        <MaterialCommunityIcons name="chevron-right" size={24} color="#666" />
+      </TouchableOpacity>
+
+      <View style={styles.progressContainer}>
+        <View
+          style={[
+            styles.progressBar,
+            { backgroundColor: color + '20' }
+          ]}
+        >
+          <View
+            style={[
+              styles.progress,
+              {
+                backgroundColor: color,
+                width: `${Math.min(progress, 100)}%`
+              }
+            ]}
           />
         </View>
-        <Text style={styles.title}>{name}</Text>
-        <IconButton
-          icon="chevron-right"
-          size={24}
-          onPress={onPress}
-        />
+        <View style={styles.amountContainer}>
+          <Text style={styles.amount}>${monthlySpending}</Text>
+          <Text style={styles.totalAmount}>of ${monthlyBudget}</Text>
+        </View>
       </View>
-      
-      <View style={styles.details}>
-        <Text style={styles.label}>Month's spending</Text>
-        <Text style={styles.label}>Monthly budget</Text>
-      </View>
-      
-      <View style={styles.amounts}>
-        <Text style={styles.amount}>${monthlySpending}</Text>
-        <Text style={styles.amount}>${monthlyBudget}</Text>
-      </View>
-      
-      <View style={styles.progressContainer}>
-        <View 
-          style={[
-            styles.progressBar, 
-            { backgroundColor: color, width: `${progress * 100}%` }
-          ]} 
-        />
-      </View>
-    </Surface>
+
+      <AddSpendingModal
+        visible={isSpendingModalVisible}
+        onDismiss={() => setIsSpendingModalVisible(false)}
+        onSubmit={onAddSpending}
+        budget={{ id, name, icon, color }}
+      />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    backgroundColor: 'white',
+    borderRadius: 12,
     marginHorizontal: 16,
     marginVertical: 8,
-    borderRadius: 12,
-    elevation: 2,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 16,
+  },
+  titleSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   iconContainer: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   title: {
-    flex: 1,
     fontSize: 16,
     fontWeight: '500',
   },
-  details: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 12,
+  subtitle: {
+    fontSize: 14,
     color: '#666',
+    marginTop: 2,
   },
-  amounts: {
+  dateRange: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 2,
+  },
+  progressContainer: {
+    marginTop: 8,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  progress: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  amountContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 12,
+    alignItems: 'center',
+    gap: 4,
   },
   amount: {
     fontSize: 14,
     fontWeight: '500',
   },
-  progressContainer: {
-    height: 4,
-    backgroundColor: '#E5E5E5',
-    borderRadius: 2,
-    overflow: 'hidden',
-  },
-  progressBar: {
-    height: '100%',
-    borderRadius: 2,
+  totalAmount: {
+    fontSize: 14,
+    color: '#666',
   },
 });
 

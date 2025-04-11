@@ -1,66 +1,75 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Modal, Portal, Text, TextInput, Button, Switch, IconButton } from 'react-native-paper';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { Modal, Portal, Text, TextInput } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
-const GOAL_CATEGORIES = [
-  { id: 1, name: 'Buy furniture', icon: 'sofa', color: '#EB5757' },
-  { id: 2, name: 'Vacation', icon: 'airplane', color: '#F2C94C' },
-  { id: 3, name: 'Graduation', icon: 'school', color: '#2F80ED' },
-  { id: 4, name: 'Buy boat', icon: 'sail-boat', color: '#56CCF2' },
-  { id: 5, name: 'Buy house', icon: 'home', color: '#F2994A' },
-];
+import { Calendar } from 'react-native-calendars';
 
 const AddGoalModal = ({ visible, onDismiss, onSubmit }) => {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [goalName, setGoalName] = useState('');
   const [amount, setAmount] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [account, setAccount] = useState('');
-  const [reminder, setReminder] = useState(false);
-  const [showCategories, setShowCategories] = useState(false);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectingDate, setSelectingDate] = useState('start'); // 'start' or 'end'
 
   const handleSubmit = () => {
+    if (!goalName || !amount || !startDate || !endDate) return;
+
     onSubmit({
-      category: selectedCategory,
+      name: goalName,
+      icon: 'airplane', // Default icon, you can modify this based on goal name
+      color: '#FFD93D', // Default color
       amount: parseFloat(amount),
       startDate,
       endDate,
-      account,
-      reminder,
     });
+
+    // Reset form
+    setGoalName('');
+    setAmount('');
+    setStartDate(null);
+    setEndDate(null);
     onDismiss();
   };
 
-  if (showCategories) {
+  const handleDateSelect = (date) => {
+    if (selectingDate === 'start') {
+      setStartDate(date.dateString);
+    } else {
+      setEndDate(date.dateString);
+    }
+    setShowCalendar(false);
+  };
+
+  if (showCalendar) {
     return (
       <Portal>
-        <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.modal}>
-          <View style={styles.header}>
-            <IconButton icon="arrow-left" onPress={() => setShowCategories(false)} />
-            <Text style={styles.title}>Select the goal</Text>
-          </View>
-          <ScrollView style={styles.categoryList}>
-            {GOAL_CATEGORIES.map((category) => (
-              <Button
-                key={category.id}
-                mode="outlined"
-                style={[
-                  styles.categoryButton,
-                  selectedCategory?.id === category.id && styles.selectedCategory,
-                ]}
-                onPress={() => {
-                  setSelectedCategory(category);
-                  setShowCategories(false);
-                }}
-              >
-                <View style={styles.categoryContent}>
-                  <MaterialCommunityIcons name={category.icon} size={24} color={category.color} />
-                  <Text style={styles.categoryName}>{category.name}</Text>
-                </View>
-              </Button>
-            ))}
-          </ScrollView>
+        <Modal visible={true} onDismiss={() => setShowCalendar(false)} contentContainerStyle={styles.calendarModal}>
+          <Calendar
+            onDayPress={handleDateSelect}
+            minDate={new Date().toISOString().split('T')[0]}
+            markedDates={{
+              [startDate || '']: { selected: true, selectedColor: '#6200ee' },
+              [endDate || '']: { selected: true, selectedColor: '#6200ee' }
+            }}
+            theme={{
+              backgroundColor: '#ffffff',
+              calendarBackground: '#ffffff',
+              textSectionTitleColor: '#666',
+              selectedDayBackgroundColor: '#6200ee',
+              selectedDayTextColor: '#ffffff',
+              todayTextColor: '#6200ee',
+              dayTextColor: '#2d4150',
+              textDisabledColor: '#d9e1e8',
+              dotColor: '#6200ee',
+              selectedDotColor: '#ffffff',
+              arrowColor: '#6200ee',
+              monthTextColor: '#2d4150',
+              textDayFontSize: 16,
+              textMonthFontSize: 16,
+              textDayHeaderFontSize: 14
+            }}
+          />
         </Modal>
       </Portal>
     );
@@ -68,122 +77,142 @@ const AddGoalModal = ({ visible, onDismiss, onSubmit }) => {
 
   return (
     <Portal>
-      <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.modal}>
+      <Modal visible={visible} onDismiss={onDismiss} contentContainerStyle={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>Add new goal</Text>
-          <IconButton icon="close" onPress={onDismiss} />
+          <Text style={styles.title}>Add New Goal</Text>
+          <TouchableOpacity onPress={onDismiss}>
+            <MaterialCommunityIcons name="close" size={24} color="#000" />
+          </TouchableOpacity>
         </View>
-        
-        <ScrollView>
-          <Button
-            mode="outlined"
-            onPress={() => setShowCategories(true)}
-            style={styles.input}
-          >
-            {selectedCategory ? selectedCategory.name : 'Select goal'}
-          </Button>
 
-          <TextInput
-            label="Amount"
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
-            left={<TextInput.Affix text="$" />}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <TextInput
-            label="Start date"
-            value={startDate}
-            onChangeText={setStartDate}
-            mode="outlined"
-            style={styles.input}
-            right={<TextInput.Icon icon="calendar" />}
-          />
-
-          <TextInput
-            label="End date"
-            value={endDate}
-            onChangeText={setEndDate}
-            mode="outlined"
-            style={styles.input}
-            right={<TextInput.Icon icon="calendar" />}
-          />
-
-          <TextInput
-            label="Account"
-            value={account}
-            onChangeText={setAccount}
-            mode="outlined"
-            style={styles.input}
-          />
-
-          <View style={styles.switchContainer}>
-            <Text>Reminder</Text>
-            <Switch value={reminder} onValueChange={setReminder} />
+        <View style={styles.form}>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Goal Name</Text>
+            <TextInput
+              value={goalName}
+              onChangeText={setGoalName}
+              style={styles.input}
+              placeholder="Enter goal name"
+              mode="flat"
+              underlineColor="transparent"
+            />
           </View>
 
-          <Button
-            mode="contained"
-            onPress={handleSubmit}
-            style={styles.submitButton}
-            disabled={!selectedCategory || !amount}
-          >
-            Add goal
-          </Button>
-        </ScrollView>
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Target Amount</Text>
+            <TextInput
+              value={amount}
+              onChangeText={setAmount}
+              keyboardType="numeric"
+              style={styles.input}
+              placeholder="Enter amount"
+              mode="flat"
+              underlineColor="transparent"
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>Start Date</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => {
+                setSelectingDate('start');
+                setShowCalendar(true);
+              }}
+            >
+              <MaterialCommunityIcons name="calendar" size={24} color="#666" />
+              <Text style={styles.dateText}>
+                {startDate || 'Select start date'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Text style={styles.label}>End Date</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => {
+                setSelectingDate('end');
+                setShowCalendar(true);
+              }}
+            >
+              <MaterialCommunityIcons name="calendar" size={24} color="#666" />
+              <Text style={styles.dateText}>
+                {endDate || 'Select end date'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitText}>Add Goal</Text>
+          </TouchableOpacity>
+        </View>
       </Modal>
     </Portal>
   );
 };
 
 const styles = StyleSheet.create({
-  modal: {
+  container: {
     backgroundColor: 'white',
     margin: 20,
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 20,
-    maxHeight: '80%',
+  },
+  calendarModal: {
+    backgroundColor: 'white',
+    margin: 20,
+    borderRadius: 15,
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '500',
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  form: {
+    gap: 20,
+  },
+  inputContainer: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 16,
+    color: '#666',
   },
   input: {
-    marginBottom: 16,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    height: 50,
   },
-  switchContainer: {
+  dateButton: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    backgroundColor: '#f0f0f0',
+    padding: 12,
+    borderRadius: 10,
+    gap: 10,
+  },
+  dateText: {
+    color: '#666',
+    fontSize: 16,
   },
   submitButton: {
-    marginTop: 8,
-  },
-  categoryList: {
-    maxHeight: '80%',
-  },
-  categoryButton: {
-    marginBottom: 8,
-  },
-  selectedCategory: {
-    backgroundColor: '#E8F5E9',
-  },
-  categoryContent: {
-    flexDirection: 'row',
+    backgroundColor: '#6200ee',
+    borderRadius: 10,
+    padding: 16,
     alignItems: 'center',
-    padding: 8,
+    marginTop: 10,
   },
-  categoryName: {
-    marginLeft: 16,
+  submitText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
